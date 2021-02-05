@@ -40,20 +40,16 @@ object App {
       .toMat(Sink.ignore)(Keep.both)
       .run()
 
-    def produce(current: Int): Future[Unit] =
-      if (current > 10000) {
-        Future.successful(())
-      } else {
-        val offered = queue.offer((HttpRequest(uri = s"/hello/$current"), ()))
-        offered.flatMap { r =>
-          println(r)
-          produce(current + 1)
-        }
+    Source
+      .fromIterator(() => (0 until 10000).iterator)
+      .mapAsync(1) { current =>
+        queue.offer((HttpRequest(uri = s"/hello/$current"), ()))
       }
-
-    produce(0)
+      .log("queue result")
+      .run()
       .transformWith(_ => {
-        queue.complete(); streamCompletion
+        queue.complete()
+        streamCompletion
       })
       .transformWith(_ => fBinding.future)
       .flatMap(stop)
