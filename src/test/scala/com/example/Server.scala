@@ -28,12 +28,11 @@ object Server {
     Http()
       .newServerAt("localhost", 8080)
       .bind {
-        (path("hello" / IntNumber.optional) & get) { (i: Option[Int]) =>
-          complete(s"response $i")
-        } ~
-          (path("hello") & get) {
-            complete(s"hello")
+        (path("hello") & put) {
+          entity(as[String]) { e =>
+            complete(s"response $e")
           }
+        }
       }
       .andThen {
         case Success(binding) =>

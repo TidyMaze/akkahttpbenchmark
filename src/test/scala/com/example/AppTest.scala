@@ -15,8 +15,13 @@ class AppTest extends Simulation {
     .baseUrl("http://localhost:8080")
 
   val scn = scenario("My Scenario")
-    .exec(http("hello").get("/hello"))
+    .exec(http("hello").put("/hello").body(StringBody("test")))
 
-  setUp(scn.inject(rampUsersPerSec(1).to(600).during(60.seconds)))
+  setUp(
+    scn.inject(
+      rampUsersPerSec(1).to(800).during(60.seconds),
+//      constantUsersPerSec(800).during(60.seconds)
+    )
+  )
     .protocols(httpProtocol)
 }
